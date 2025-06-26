@@ -20,6 +20,8 @@
     tr.expense { color: #c00; }
     .filter-bar { margin: 10px 0; }
     canvas { width: 100% !important; height: 200px !important; }
+    .backup-bar { max-width:400px; margin:10px auto 30px auto; text-align:center; }
+    .backup-bar button { width: auto; margin: 4px 6px; display: inline-block;}
   </style>
 </head>
 <body>
@@ -75,6 +77,13 @@
     </div>
   </div>
 
+  <!-- Backup/Export/Import Bar -->
+  <div class="backup-bar">
+    <button onclick="exportData()">Backup/Exportieren</button>
+    <input type="file" id="importFile" style="display:none" accept="application/json" onchange="importData(event)">
+    <button onclick="document.getElementById('importFile').click()">Backup importieren</button>
+  </div>
+
   <!-- Chart.js für Graphen -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
@@ -101,78 +110,4 @@
       filtered.slice().reverse().forEach((e, i) => {
         const tr = document.createElement('tr');
         tr.className = e.type === 'income' ? 'income' : 'expense';
-        tr.innerHTML = `
-          <td>${e.date}</td>
-          <td>${e.category}</td>
-          <td>${e.type === 'income' ? '+' : '-'}${e.amount.toFixed(2)}</td>
-          <td>${e.type === 'income' ? 'Einnahme' : 'Ausgabe'}</td>
-          <td>${e.desc || ''}</td>
-          <td><button onclick="deleteEntry(${entries.length - 1 - i})">✕</button></td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    function deleteEntry(idx) {
-      let entries = getEntries();
-      entries.splice(idx, 1);
-      saveEntries(entries);
-      loadAndRender();
-    }
-
-    function loadAndRender() {
-      let entries = getEntries();
-      const filterCat = document.getElementById('filterCat').value;
-      updateSaldo(entries);
-      renderHistory(entries, filterCat);
-      renderChart(entries, filterCat);
-    }
-
-    document.getElementById('addForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      let entries = getEntries();
-      const amount = parseFloat(document.getElementById('amount').value);
-      const category = document.getElementById('category').value;
-      const desc = document.getElementById('desc').value;
-      const date = document.getElementById('date').value;
-      const type = document.getElementById('type').value;
-      entries.push({amount, category, desc, date, type});
-      saveEntries(entries);
-      this.reset();
-      loadAndRender();
-    });
-
-    document.getElementById('filterCat').addEventListener('change', loadAndRender);
-
-    // Chart.js Graph: Verlauf über die Zeit
-    let chart;
-    function renderChart(entries, filterCat) {
-      let filtered = filterCat ? entries.filter(e => e.category === filterCat) : entries;
-      filtered = filtered.slice().sort((a, b) => a.date.localeCompare(b.date));
-      let saldo = 0;
-      let labels = [];
-      let data = [];
-      filtered.forEach(e => {
-        saldo += e.type === 'income' ? e.amount : -e.amount;
-        labels.push(e.date);
-        data.push(saldo);
-      });
-      if (chart) chart.destroy();
-      chart = new Chart(document.getElementById('chart'), {
-        type: 'line',
-        data: {
-          labels,
-          datasets: [{label: 'Verlauf', data, fill: false}]
-        },
-        options: {responsive: true, plugins: {legend: {display: false}}}
-      });
-    }
-
-    // Default today's date
-    document.getElementById('date').value = new Date().toISOString().slice(0,10);
-
-    window.deleteEntry = deleteEntry;
-    window.onload = loadAndRender;
-  </script>
-</body>
-</html>
+       
